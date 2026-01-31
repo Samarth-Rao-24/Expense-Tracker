@@ -98,6 +98,33 @@ def add_expense():
 
     return render_template('add_expense.html')
 
+
+# ---------------- EXPENSES ----------------
+
+@app.route('/expenses')
+def expenses():
+    if not session.get('loggedin'):
+        return redirect(url_for('login'))
+    
+    cursor=db.cursor()
+
+    # fetching all expenses
+    cursor.execute("SELECT expense_date, category, amount, description FROM expenses WHERE user_id=%s ORDER BY expense_date DESC""",(session['user_id'],))
+    expenses = cursor.fetchall()
+
+    # total expense
+    cursor.execute('SELECT IFNULL(SUM(amount),0) AS total FROM expenses WHERE user_id=%s',(session['user_id'],))
+    total= cursor.fetchone()['total']
+
+    # cateory wise total
+    cursor.execute('SELECT category, SUM(amount) AS total FROM expenses WHERE user_id=%s GROUP BY category',(session['user_id'],))
+    category_totals = cursor.fetchall()
+
+    cursor.close()
+
+    return render_template('expenses.html', expenses=expenses,total=total,category_totals=category_totals)
+
+
 # ---------------- LOGOUT ----------------
 @app.route('/logout')
 def logout():
