@@ -5,7 +5,7 @@ import re
 app = Flask(__name__)
 app.secret_key = 'adeee'
 
-# MySQL connection config
+# ---------------- DB CONNECTION ----------------
 db = pymysql.connect(
     host="localhost",
     user="root",
@@ -100,34 +100,51 @@ def add_expense():
 
     return render_template('add_expense.html')
 
-# ---------------- VIEW EXPENSES ----------------
-@app.route('/expenses')
+# ---------------- VIEW EXPENSES (DAY 8) ----------------
+@app.route('/expenses', methods=['GET', 'POST'])
 def expenses():
     if not session.get('loggedin'):
         flash("Please login first")
         return redirect(url_for('login'))
 
-    cursor = db.cursor()
+    if request.method == 'POST':
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        category = request.form.get('category')
+    else:
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        category = request.args.get('category')
 
-    # Fetch all expenses
-    cursor.execute(
-        "SELECT expense_date, category, amount, description "
-        "FROM expenses WHERE user_id=%s ORDER BY expense_date DESC",
-        (session['user_id'],)
-    )
+    query = """
+        SELECT expense_date, category, amount, description
+        FROM expenses
+        WHERE user_id = %s
+    """
+    params = [session['user_id']]
+
+    if start_date and end_date:
+        query += " AND expense_date BETWEEN %s AND %s"
+        params.extend([start_date, end_date])
+
+    if category:
+        query += " AND category = %s"
+        params.append(category)
+
+    query += " ORDER BY expense_date DESC"
+
+    cursor = db.cursor()
+    cursor.execute(query, params)
     expenses = cursor.fetchall()
 
-    # Total expense
     cursor.execute(
         "SELECT IFNULL(SUM(amount),0) AS total FROM expenses WHERE user_id=%s",
         (session['user_id'],)
     )
     total = cursor.fetchone()['total']
 
-    # Category-wise totals
     cursor.execute(
-        "SELECT category, SUM(amount) AS total FROM expenses "
-        "WHERE user_id=%s GROUP BY category",
+        "SELECT category, SUM(amount) AS total FROM expenses WHERE user_id=%s GROUP BY category",
         (session['user_id'],)
     )
     category_totals = cursor.fetchall()
@@ -140,6 +157,7 @@ def expenses():
         total=total,
         category_totals=category_totals
     )
+
 
 # ---------------- LOGOUT ----------------
 @app.route('/logout')
