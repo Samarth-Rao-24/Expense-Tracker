@@ -1,0 +1,30 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+}
+
+nav {
+    background: #2c3e50;
+    padding: 12px;
+}
+
+nav a {
+    color: white;
+    margin-right: 15px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.container {
+    background: white;
+    padding: 20px;
+    margin: 30px auto;
+    width: 50%;
+    border-radius: 6px;
+}
+
+.flash {
+    list-style: none;
+    color: green;
+    margin: 10px;
+}

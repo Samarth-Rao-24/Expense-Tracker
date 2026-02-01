@@ -1,25 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>My Expenses</title>
-    <style>
-        table {
-            width: 80%;
-            border-collapse: collapse;
-            margin: 30px auto;
-        }
-        th, td {
-            border: 1px solid #333;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
 
+{% block title %}My Expenses{% endblock %}
+
+{% block content %}
 <h2 style="text-align:center;">My Expenses</h2>
 
 <h3 style="text-align:center;">Total Expense: ₹ {{ total }}</h3>
@@ -31,7 +14,6 @@
         <th>Category</th>
         <th>Total</th>
     </tr>
-
     {% for c in category_totals %}
     <tr>
         <td>{{ c.category }}</td>
@@ -47,7 +29,6 @@
         <th>Amount</th>
         <th>Description</th>
     </tr>
-
     {% for e in expenses %}
     <tr>
         <td>{{ e.expense_date }}</td>
@@ -57,11 +38,4 @@
     </tr>
     {% endfor %}
 </table>
-
-<p style="text-align:center;">
-    <a href="/add-expense">Add Expense</a> |
-    <a href="/logout">Logout</a>
-</p>
-
-</body>
-</html>
+{% endblock %}

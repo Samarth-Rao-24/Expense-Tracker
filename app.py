@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for, session, render_template
+from flask import Flask, request, redirect, url_for, session, render_template, flash
 import pymysql
 import re
 
@@ -17,7 +17,6 @@ db = pymysql.connect(
 # ---------------- REGISTER ----------------
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    msg = ''
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -27,11 +26,11 @@ def register():
         account = cursor.fetchone()
 
         if account:
-            msg = "Account already exists!"
+            flash("Account already exists!")
         elif not re.match(r'^[A-Za-z0-9]+$', username):
-            msg = "Username must contain letters and numbers only!"
+            flash("Username must contain letters and numbers only!")
         elif not username or not password:
-            msg = "Please fill out the form!"
+            flash("Please fill out the form!")
         else:
             cursor.execute(
                 "INSERT INTO users (username, password) VALUES (%s, %s)",
@@ -39,16 +38,16 @@ def register():
             )
             db.commit()
             cursor.close()
+            flash("Registration successful! Please login.")
             return redirect(url_for('login'))
 
         cursor.close()
 
-    return render_template('register.html', msg=msg)
+    return render_template('register.html')
 
 # ---------------- LOGIN ----------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    msg = ''
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -65,16 +64,18 @@ def login():
             session['loggedin'] = True
             session['user_id'] = account['user_id']
             session['username'] = account['username']
+            flash("Login successful!")
             return redirect(url_for('add_expense'))
         else:
-            msg = "Incorrect username or password!"
+            flash("Invalid username or password!")
 
-    return render_template('login.html', msg=msg)
+    return render_template('login.html')
 
 # ---------------- ADD EXPENSE ----------------
 @app.route('/add-expense', methods=['GET', 'POST'])
 def add_expense():
     if not session.get('loggedin'):
+        flash("Please login first")
         return redirect(url_for('login'))
 
     if request.method == 'POST':
@@ -94,41 +95,57 @@ def add_expense():
         db.commit()
         cursor.close()
 
-        return "Expense Added Successfully"
+        flash("Expense added successfully!")
+        return redirect(url_for('expenses'))
 
     return render_template('add_expense.html')
 
-
-# ---------------- EXPENSES ----------------
-
+# ---------------- VIEW EXPENSES ----------------
 @app.route('/expenses')
 def expenses():
     if not session.get('loggedin'):
+        flash("Please login first")
         return redirect(url_for('login'))
-    
-    cursor=db.cursor()
 
-    # fetching all expenses
-    cursor.execute("SELECT expense_date, category, amount, description FROM expenses WHERE user_id=%s ORDER BY expense_date DESC""",(session['user_id'],))
+    cursor = db.cursor()
+
+    # Fetch all expenses
+    cursor.execute(
+        "SELECT expense_date, category, amount, description "
+        "FROM expenses WHERE user_id=%s ORDER BY expense_date DESC",
+        (session['user_id'],)
+    )
     expenses = cursor.fetchall()
 
-    # total expense
-    cursor.execute('SELECT IFNULL(SUM(amount),0) AS total FROM expenses WHERE user_id=%s',(session['user_id'],))
-    total= cursor.fetchone()['total']
+    # Total expense
+    cursor.execute(
+        "SELECT IFNULL(SUM(amount),0) AS total FROM expenses WHERE user_id=%s",
+        (session['user_id'],)
+    )
+    total = cursor.fetchone()['total']
 
-    # cateory wise total
-    cursor.execute('SELECT category, SUM(amount) AS total FROM expenses WHERE user_id=%s GROUP BY category',(session['user_id'],))
+    # Category-wise totals
+    cursor.execute(
+        "SELECT category, SUM(amount) AS total FROM expenses "
+        "WHERE user_id=%s GROUP BY category",
+        (session['user_id'],)
+    )
     category_totals = cursor.fetchall()
 
     cursor.close()
 
-    return render_template('expenses.html', expenses=expenses,total=total,category_totals=category_totals)
-
+    return render_template(
+        'expenses.html',
+        expenses=expenses,
+        total=total,
+        category_totals=category_totals
+    )
 
 # ---------------- LOGOUT ----------------
 @app.route('/logout')
 def logout():
     session.clear()
+    flash("You have been logged out")
     return redirect(url_for('login'))
 
 # ---------------- HOME ----------------
