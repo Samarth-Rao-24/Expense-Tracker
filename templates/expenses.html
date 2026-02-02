@@ -2,71 +2,127 @@
 {% block title %}Expenses{% endblock %}
 
 {% block content %}
-<h2>Your Expenses</h2>
+<div class="container">
+    <h2>Your Expenses</h2>
 
-<form method="post">
-    <div>
-        <label>From</label>
-        <input type="date" name="start_date" 
-               value="{{ request.form.start_date or request.args.get('start_date') }}">
-    </div>
+    <!-- Filter Form -->
+    <form method="post">
+        <div>
+            <label>From</label>
+            <input type="date" name="start_date" 
+                   value="{{ request.form.start_date or request.args.get('start_date') }}">
+        </div>
 
-    <div>
-        <label>To</label>
-        <input type="date" name="end_date" 
-               value="{{ request.form.end_date or request.args.get('end_date') }}">
-    </div>
+        <div>
+            <label>To</label>
+            <input type="date" name="end_date" 
+                   value="{{ request.form.end_date or request.args.get('end_date') }}">
+        </div>
 
-    <div>
-        <label>Category</label>
-        <select name="category">
-          <option value="" {% if not (request.form.category or request.args.get('category')) %}selected{% endif %}>All</option>
-          <option value="Food" {% if (request.form.category or request.args.get('category')) == 'Food' %}selected{% endif %}>Food</option>
-          <option value="Travel" {% if (request.form.category or request.args.get('category')) == 'Travel' %}selected{% endif %}>Travel</option>
-          <option value="Shopping" {% if (request.form.category or request.args.get('category')) == 'Shopping' %}selected{% endif %}>Shopping</option>
-          <option value="Bills" {% if (request.form.category or request.args.get('category')) == 'Bills' %}selected{% endif %}>Bills</option>
-          <option value="Others" {% if (request.form.category or request.args.get('category')) == 'Others' %}selected{% endif %}>Others</option>
-        </select>
-    </div>
+        <div>
+            <label>Category</label>
+            <select name="category">
+              <option value="" {% if not (request.form.category or request.args.get('category')) %}selected{% endif %}>All</option>
+              <option value="Food" {% if (request.form.category or request.args.get('category')) == 'Food' %}selected{% endif %}>Food</option>
+              <option value="Travel" {% if (request.form.category or request.args.get('category')) == 'Travel' %}selected{% endif %}>Travel</option>
+              <option value="Shopping" {% if (request.form.category or request.args.get('category')) == 'Shopping' %}selected{% endif %}>Shopping</option>
+              <option value="Bills" {% if (request.form.category or request.args.get('category')) == 'Bills' %}selected{% endif %}>Bills</option>
+              <option value="Others" {% if (request.form.category or request.args.get('category')) == 'Others' %}selected{% endif %}>Others</option>
+            </select>
+        </div>
 
-    <div>
-        <button type="submit">Filter</button>
-    </div>
-</form>
+        <div>
+            <button type="submit">Filter</button>
+        </div>
+    </form>
 
-<br>
+    <br>
 
-<h3>Total Spent: ₹{{ total }}</h3>
+    <!-- Total Summary -->
+    <h3>Total Spent: ₹{{ total }}</h3>
+    <hr>
 
-<table border="1" width="100%">
-    <tr>
-        <th>Date</th>
-        <th>Category</th>
-        <th>Amount</th>
-        <th>Description</th>
-    </tr>
-
-    {% for exp in expenses %}
-    <tr>
-        <td>{{ exp.expense_date }}</td>
-        <td>{{ exp.category }}</td>
-        <td>{{ exp.amount }}</td>
-        <td>{{ exp.description }}</td>
-    </tr>
-    {% endfor %}
-</table>
-
-<h3>Category-wise Spending</h3>
-<ul>
-  {% for cat in category_totals %}
-    <li>{{ cat.category }} : ₹{{ cat.total }}</li>
-  {% endfor %}
-</ul>
-
-
-{% if expenses|length == 0 %}
+    <!-- Expense Table -->
+    {% if expenses %}
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Description</th>
+        </tr>
+        {% for exp in expenses %}
+        <tr>
+            <td>{{ exp.expense_date }}</td>
+            <td>{{ exp.category }}</td>
+            <td>₹{{ exp.amount }}</td>
+            <td>{{ exp.description }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
     <p>No expenses found for the selected filter.</p>
-{% endif %}
+    {% endif %}
 
+    <br>
 
+    <!-- Category-wise Summary -->
+    <h3>Category-wise Spending</h3>
+    {% if category_totals %}
+    <ul>
+      {% for cat in category_totals %}
+        <li>{{ cat.category }} : ₹{{ cat.total }}</li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>No category summary available.</p>
+    {% endif %}
+
+    <br>
+
+    <!-- Bar Chart Visualization -->
+    <h3>Category-wise Spending (Chart)</h3>
+    <canvas id="categoryChart" width="400" height="200"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('categoryChart').getContext('2d');
+
+        const categories = [
+            {% for cat in category_totals %}
+                "{{ cat.category }}",
+            {% endfor %}
+        ];
+
+        const totals = [
+            {% for cat in category_totals %}
+                {{ cat.total }},
+            {% endfor %}
+        ];
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: categories,
+                datasets: [{
+                    label: 'Spending (₹)',
+                    data: totals,
+                    backgroundColor: '#2c3e50',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</div>
 {% endblock %}

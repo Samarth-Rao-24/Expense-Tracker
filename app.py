@@ -100,7 +100,7 @@ def add_expense():
 
     return render_template('add_expense.html')
 
-# ---------------- VIEW EXPENSES (DAY 8) ----------------
+# ---------------- VIEW EXPENSES  ----------------
 @app.route('/expenses', methods=['GET', 'POST'])
 def expenses():
     if not session.get('loggedin'):
