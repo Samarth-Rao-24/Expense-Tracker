@@ -5,13 +5,33 @@
 <h2>Your Expenses</h2>
 
 <form method="post">
-    From: <input type="date" name="start_date">
-    To: <input type="date" name="end_date">
+    <div>
+        <label>From</label>
+        <input type="date" name="start_date" 
+               value="{{ request.form.start_date or request.args.get('start_date') }}">
+    </div>
 
-    Category:
-    <input type="text" name="category">
+    <div>
+        <label>To</label>
+        <input type="date" name="end_date" 
+               value="{{ request.form.end_date or request.args.get('end_date') }}">
+    </div>
 
-    <button type="submit">Filter</button>
+    <div>
+        <label>Category</label>
+        <select name="category">
+          <option value="" {% if not (request.form.category or request.args.get('category')) %}selected{% endif %}>All</option>
+          <option value="Food" {% if (request.form.category or request.args.get('category')) == 'Food' %}selected{% endif %}>Food</option>
+          <option value="Travel" {% if (request.form.category or request.args.get('category')) == 'Travel' %}selected{% endif %}>Travel</option>
+          <option value="Shopping" {% if (request.form.category or request.args.get('category')) == 'Shopping' %}selected{% endif %}>Shopping</option>
+          <option value="Bills" {% if (request.form.category or request.args.get('category')) == 'Bills' %}selected{% endif %}>Bills</option>
+          <option value="Others" {% if (request.form.category or request.args.get('category')) == 'Others' %}selected{% endif %}>Others</option>
+        </select>
+    </div>
+
+    <div>
+        <button type="submit">Filter</button>
+    </div>
 </form>
 
 <br>
@@ -35,4 +55,18 @@
     </tr>
     {% endfor %}
 </table>
+
+<h3>Category-wise Spending</h3>
+<ul>
+  {% for cat in category_totals %}
+    <li>{{ cat.category }} : ₹{{ cat.total }}</li>
+  {% endfor %}
+</ul>
+
+
+{% if expenses|length == 0 %}
+    <p>No expenses found for the selected filter.</p>
+{% endif %}
+
+
 {% endblock %}
