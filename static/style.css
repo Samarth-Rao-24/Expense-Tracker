@@ -22,28 +22,59 @@ nav a:hover {
     text-decoration: underline;
 }
 
-/* CONTAINER */
+/* CONTAINER (WIDER FOR EXPENSE PAGE) */
 .container {
     background: white;
-    padding: 25px;
+    padding: 30px;
     margin: 40px auto;
-    width: 50%;
+    width: 80%;              /* 🔥 widened from 50% */
+    max-width: 1200px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 /* HEADINGS */
-h2, h3 {
+h2, h3, h4 {
+    color: #2c3e50;
+}
+
+/* GRID LAYOUT (FILTER + SUMMARY) */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+/* CARD STYLE */
+.card {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+/* FULL WIDTH SECTIONS */
+.full-width {
+    width: 100%;
+    margin-top: 30px;
+}
+
+/* TOTAL AMOUNT */
+.total {
+    font-size: 26px;
+    font-weight: bold;
+    margin: 10px 0 20px;
     color: #2c3e50;
 }
 
 /* FORM LABELS */
 label {
-    display: block;          /* ensures labels are above inputs */
-    font-size: 14px;         /* uniform text size */
-    font-weight: bold;       /* makes labels stand out */
-    margin-top: 12px;        /* spacing between fields */
-    color: #2c3e50;          /* matches headings/nav color */
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 12px;
+    color: #2c3e50;
 }
 
 /* FORMS */
@@ -70,6 +101,7 @@ button {
     cursor: pointer;
     font-weight: bold;
     transition: background 0.3s ease;
+    margin-top: 15px;
 }
 
 button:hover {
@@ -80,7 +112,7 @@ button:hover {
 .flash {
     list-style: none;
     margin: 20px auto;
-    width: 50%;
+    width: 80%;
     padding: 10px;
 }
 
@@ -96,10 +128,11 @@ button:hover {
 table {
     border-collapse: collapse;
     width: 100%;
+    margin-top: 15px;
 }
 
 table th, table td {
-    padding: 10px;
+    padding: 12px;
     text-align: left;
     font-size: 14px;
 }
@@ -111,4 +144,29 @@ table th {
 
 table tr:nth-child(even) {
     background: #f2f2f2;
+}
+
+table tr:hover {
+    background: #eaeaea;
+}
+
+/* LIST (CATEGORY SUMMARY) */
+ul {
+    padding-left: 20px;
+}
+
+ul li {
+    margin: 6px 0;
+    font-size: 14px;
+}
+
+/* RESPONSIVE (MOBILE) */
+@media (max-width: 900px) {
+    .container {
+        width: 95%;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
 }

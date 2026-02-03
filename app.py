@@ -1,6 +1,7 @@
 from flask import Flask, request, redirect, url_for, session, render_template, flash
 import pymysql
 import re
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'adeee'
@@ -32,9 +33,12 @@ def register():
         elif not username or not password:
             flash("Please fill out the form!")
         else:
+            # 🔐 HASH PASSWORD BEFORE STORING
+            hashed_password = generate_password_hash(password)
+
             cursor.execute(
                 "INSERT INTO users (username, password) VALUES (%s, %s)",
-                (username, password)
+                (username, hashed_password)
             )
             db.commit()
             cursor.close()
@@ -54,13 +58,14 @@ def login():
 
         cursor = db.cursor()
         cursor.execute(
-            "SELECT * FROM users WHERE username=%s AND password=%s",
-            (username, password)
+            "SELECT * FROM users WHERE username=%s",
+            (username,)
         )
         account = cursor.fetchone()
         cursor.close()
 
-        if account:
+        # 🔐 CHECK HASHED PASSWORD
+        if account and check_password_hash(account['password'], password):
             session['loggedin'] = True
             session['user_id'] = account['user_id']
             session['username'] = account['username']
@@ -100,7 +105,7 @@ def add_expense():
 
     return render_template('add_expense.html')
 
-# ---------------- VIEW EXPENSES  ----------------
+# ---------------- VIEW EXPENSES ----------------
 @app.route('/expenses', methods=['GET', 'POST'])
 def expenses():
     if not session.get('loggedin'):
@@ -157,7 +162,6 @@ def expenses():
         total=total,
         category_totals=category_totals
     )
-
 
 # ---------------- LOGOUT ----------------
 @app.route('/logout')
