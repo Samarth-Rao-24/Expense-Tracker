@@ -42,7 +42,7 @@
         {% if category_totals %}
         <ul>
             {% for cat in category_totals %}
-                <li>{{ cat.category }} : ₹{{ cat.total }}</li>
+                <li>{{ cat['category'] }} : ₹{{ cat['total'] }}</li>
             {% endfor %}
         </ul>
         {% else %}
@@ -61,16 +61,23 @@
         <tr>
             <th>Date</th>
             <th>Category</th>
-            <th>Amount (₹)</th>
+            <a
+            <th>Amount</th>
             <th>Description</th>
+            <th>Actions</th>
         </tr>
 
         {% for exp in expenses %}
         <tr>
-            <td>{{ exp.expense_date }}</td>
-            <td>{{ exp.category }}</td>
-            <td>₹{{ exp.amount }}</td>
-            <td>{{ exp.description }}</td>
+            <td>{{ exp['expense_date'] }}</td>
+            <td>{{ exp['category'] }}</td>
+            <td>₹{{ exp['amount'] }}</td>
+            <td>{{ exp['description'] }}</td>
+            <td>
+                <a href="{{ url_for('edit_expense', expense_id=exp['expense_id']) }}">✏️ Edit</a> |
+                <a href="{{ url_for('delete_expense', expense_id=exp['expense_id']) }}"
+                   onclick="return confirm('Are you sure?')">🗑 Delete</a>
+            </td>
         </tr>
         {% endfor %}
     </table>
@@ -89,13 +96,13 @@
 <script>
     const categories = [
         {% for cat in category_totals %}
-            "{{ cat.category }}",
+            "{{ cat['category'] }}",
         {% endfor %}
     ];
 
     const totals = [
         {% for cat in category_totals %}
-            {{ cat.total }},
+            {{ cat['total'] }},
         {% endfor %}
     ];
 

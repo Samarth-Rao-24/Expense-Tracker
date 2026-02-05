@@ -33,20 +33,16 @@ def register():
         elif not username or not password:
             flash("Please fill out the form!")
         else:
-            # 🔐 HASH PASSWORD BEFORE STORING
             hashed_password = generate_password_hash(password)
-
             cursor.execute(
                 "INSERT INTO users (username, password) VALUES (%s, %s)",
                 (username, hashed_password)
             )
             db.commit()
-            cursor.close()
             flash("Registration successful! Please login.")
             return redirect(url_for('login'))
 
         cursor.close()
-
     return render_template('register.html')
 
 # ---------------- LOGIN ----------------
@@ -57,19 +53,14 @@ def login():
         password = request.form['password']
 
         cursor = db.cursor()
-        cursor.execute(
-            "SELECT * FROM users WHERE username=%s",
-            (username,)
-        )
+        cursor.execute("SELECT * FROM users WHERE username=%s", (username,))
         account = cursor.fetchone()
         cursor.close()
 
-        # 🔐 CHECK HASHED PASSWORD
         if account and check_password_hash(account['password'], password):
             session['loggedin'] = True
             session['user_id'] = account['user_id']
             session['username'] = account['username']
-            flash("Login successful!")
             return redirect(url_for('add_expense'))
         else:
             flash("Invalid username or password!")
@@ -80,27 +71,24 @@ def login():
 @app.route('/add-expense', methods=['GET', 'POST'])
 def add_expense():
     if not session.get('loggedin'):
-        flash("Please login first")
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        amount = request.form['amount']
-        category = request.form['category']
-        expense_date = request.form['expense_date']
-        description = request.form['description']
-        user_id = session['user_id']
-
         cursor = db.cursor()
         cursor.execute(
-            """INSERT INTO expenses
+            """INSERT INTO expenses 
                (user_id, amount, category, expense_date, description)
                VALUES (%s, %s, %s, %s, %s)""",
-            (user_id, amount, category, expense_date, description)
+            (
+                session['user_id'],
+                request.form['amount'],
+                request.form['category'],
+                request.form['expense_date'],
+                request.form['description']
+            )
         )
         db.commit()
         cursor.close()
-
-        flash("Expense added successfully!")
         return redirect(url_for('expenses'))
 
     return render_template('add_expense.html')
@@ -109,20 +97,14 @@ def add_expense():
 @app.route('/expenses', methods=['GET', 'POST'])
 def expenses():
     if not session.get('loggedin'):
-        flash("Please login first")
         return redirect(url_for('login'))
 
-    if request.method == 'POST':
-        start_date = request.form.get('start_date')
-        end_date = request.form.get('end_date')
-        category = request.form.get('category')
-    else:
-        start_date = request.args.get('start_date')
-        end_date = request.args.get('end_date')
-        category = request.args.get('category')
+    start_date = request.form.get('start_date') or request.args.get('start_date')
+    end_date = request.form.get('end_date') or request.args.get('end_date')
+    category = request.form.get('category') or request.args.get('category')
 
     query = """
-        SELECT expense_date, category, amount, description
+        SELECT expense_id, expense_date, category, amount, description
         FROM expenses
         WHERE user_id = %s
     """
@@ -163,11 +145,63 @@ def expenses():
         category_totals=category_totals
     )
 
+# ---------------- EDIT EXPENSE ----------------
+@app.route('/edit-expense/<int:expense_id>', methods=['GET', 'POST'])
+def edit_expense(expense_id):
+    if not session.get('loggedin'):
+        return redirect(url_for('login'))
+
+    cursor = db.cursor()
+    cursor.execute(
+        "SELECT * FROM expenses WHERE expense_id=%s AND user_id=%s",
+        (expense_id, session['user_id'])
+    )
+    expense = cursor.fetchone()
+
+    if not expense:
+        flash("Unauthorized access")
+        return redirect(url_for('expenses'))
+
+    if request.method == 'POST':
+        cursor.execute(
+            """UPDATE expenses 
+               SET amount=%s, category=%s, expense_date=%s, description=%s
+               WHERE expense_id=%s AND user_id=%s""",
+            (
+                request.form['amount'],
+                request.form['category'],
+                request.form['expense_date'],
+                request.form['description'],
+                expense_id,
+                session['user_id']
+            )
+        )
+        db.commit()
+        cursor.close()
+        return redirect(url_for('expenses'))
+
+    cursor.close()
+    return render_template('edit_expense.html', expense=expense)
+
+# ---------------- DELETE EXPENSE ----------------
+@app.route('/delete-expense/<int:expense_id>')
+def delete_expense(expense_id):
+    if not session.get('loggedin'):
+        return redirect(url_for('login'))
+
+    cursor = db.cursor()
+    cursor.execute(
+        "DELETE FROM expenses WHERE expense_id=%s AND user_id=%s",
+        (expense_id, session['user_id'])
+    )
+    db.commit()
+    cursor.close()
+    return redirect(url_for('expenses'))
+
 # ---------------- LOGOUT ----------------
 @app.route('/logout')
 def logout():
     session.clear()
-    flash("You have been logged out")
     return redirect(url_for('login'))
 
 # ---------------- HOME ----------------
