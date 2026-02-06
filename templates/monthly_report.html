@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Monthly Expense Report</h2>
+
+<form method="POST">
+    <label for="month">Month:</label>
+    <input type="number" name="month" min="1" max="12" required>
+    
+    <label for="year">Year:</label>
+    <input type="number" name="year" min="2000" max="2100" required>
+    
+    <button type="submit">Generate Report</button>
+</form>
+
+{% if report %}
+    <h3>Total: {{ total }}</h3>
+    <table>
+        <tr>
+            <th>Category</th>
+            <th>Total</th>
+        </tr>
+        {% for row in report %}
+        <tr>
+            <td>{{ row.category }}</td>
+            <td>{{ row.total }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+{% endblock %}

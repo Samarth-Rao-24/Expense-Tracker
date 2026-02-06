@@ -1,7 +1,10 @@
-from flask import Flask, request, redirect, url_for, session, render_template, flash
+from flask import Flask, request, redirect, url_for, session, render_template, flash, Response
 import pymysql
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
+import csv 
+
 
 app = Flask(__name__)
 app.secret_key = 'adeee'
@@ -14,6 +17,16 @@ db = pymysql.connect(
     database="expense_tracker",
     cursorclass=pymysql.cursors.DictCursor
 )
+
+# ---------------- LOGIN REQUIRED DECORATOR ----------------
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('loggedin'):
+            flash("Please login first")
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # ---------------- REGISTER ----------------
 @app.route('/register', methods=['GET', 'POST'])
@@ -69,10 +82,8 @@ def login():
 
 # ---------------- ADD EXPENSE ----------------
 @app.route('/add-expense', methods=['GET', 'POST'])
+@login_required
 def add_expense():
-    if not session.get('loggedin'):
-        return redirect(url_for('login'))
-
     if request.method == 'POST':
         cursor = db.cursor()
         cursor.execute(
@@ -95,10 +106,8 @@ def add_expense():
 
 # ---------------- VIEW EXPENSES ----------------
 @app.route('/expenses', methods=['GET', 'POST'])
+@login_required
 def expenses():
-    if not session.get('loggedin'):
-        return redirect(url_for('login'))
-
     start_date = request.form.get('start_date') or request.args.get('start_date')
     end_date = request.form.get('end_date') or request.args.get('end_date')
     category = request.form.get('category') or request.args.get('category')
@@ -147,10 +156,8 @@ def expenses():
 
 # ---------------- EDIT EXPENSE ----------------
 @app.route('/edit-expense/<int:expense_id>', methods=['GET', 'POST'])
+@login_required
 def edit_expense(expense_id):
-    if not session.get('loggedin'):
-        return redirect(url_for('login'))
-
     cursor = db.cursor()
     cursor.execute(
         "SELECT * FROM expenses WHERE expense_id=%s AND user_id=%s",
@@ -185,10 +192,8 @@ def edit_expense(expense_id):
 
 # ---------------- DELETE EXPENSE ----------------
 @app.route('/delete-expense/<int:expense_id>')
+@login_required
 def delete_expense(expense_id):
-    if not session.get('loggedin'):
-        return redirect(url_for('login'))
-
     cursor = db.cursor()
     cursor.execute(
         "DELETE FROM expenses WHERE expense_id=%s AND user_id=%s",
@@ -208,6 +213,76 @@ def logout():
 @app.route('/')
 def home():
     return redirect(url_for('login'))
+
+# ---------------- MONTHLY REPORT ----------------
+@app.route('/monthly-report', methods=['GET', 'POST'])
+@login_required
+def monthly_report():
+    report = None
+    total = 0
+
+    if request.method == 'POST':
+        month = request.form['month']
+        year = request.form['year']
+
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT category, SUM(amount) AS total
+            FROM expenses
+            WHERE user_id=%s
+            AND MONTH(expense_date)=%s
+            AND YEAR(expense_date)=%s
+            GROUP BY category
+            """,
+            (session['user_id'], month, year)
+        )
+        report = cursor.fetchall()
+
+        cursor.execute(
+            """
+            SELECT IFNULL(SUM(amount),0) AS total
+            FROM expenses
+            WHERE user_id=%s
+            AND MONTH(expense_date)=%s
+            AND YEAR(expense_date)=%s
+            """,
+            (session['user_id'], month, year)
+        )
+        total = cursor.fetchone()['total']
+
+        cursor.close()
+
+    return render_template('monthly_report.html', report=report, total=total)
+
+# ---------------- EXPORT CSV ----------------
+@app.route('/export-csv')
+@login_required
+def export_csv():
+    cursor = db.cursor()
+    cursor.execute(
+        """
+        SELECT expense_date, category, amount, description
+        FROM expenses
+        WHERE user_id=%s
+        ORDER BY expense_date DESC
+        """,
+        (session['user_id'],)
+    )
+    expenses = cursor.fetchall()
+    cursor.close()
+
+    def generate():
+        yield 'Date,Category,Amount,Description\n'
+        for exp in expenses:
+            yield f"{exp['expense_date']},{exp['category']},{exp['amount']},{exp['description']}\n"
+
+    return Response(
+        generate(),
+        mimetype='text/csv',
+        headers={"Content-Disposition": "attachment;filename=expenses.csv"}
+    )
+
 
 if __name__ == '__main__':
     app.run(debug=True)

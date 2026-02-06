@@ -48,6 +48,9 @@
         {% else %}
         <p>No summary available.</p>
         {% endif %}
+
+        <!-- Export Button -->
+        <a href="{{ url_for('export_csv') }}" class="btn">🔄 Export CSV</a>
     </div>
 
 </div>
@@ -61,7 +64,6 @@
         <tr>
             <th>Date</th>
             <th>Category</th>
-            <a
             <th>Amount</th>
             <th>Description</th>
             <th>Actions</th>

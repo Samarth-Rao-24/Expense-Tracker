@@ -1,24 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>{% block title %}Expense Tracker{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-    <nav>
-        <a href="/">Home</a>
+    <!-- NAVIGATION BAR -->
+    <nav class="navbar">
+        <a href="{{ url_for('home') }}">Home</a>
 
         {% if session.get('loggedin') %}
-            <a href="/add-expense">Add Expense</a>
-            <a href="/expenses">View Expenses</a>
-            <a href="/logout">Logout</a>
+            <a href="{{ url_for('expenses') }}">Expenses</a>
+            <a href="{{ url_for('monthly_report') }}">Monthly Report</a>
+            <a href="{{ url_for('add_expense') }}">Add Expense</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
         {% else %}
-            <a href="/login">Login</a>
-            <a href="/register">Register</a>
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('register') }}">Register</a>
         {% endif %}
     </nav>
 
+    <!-- FLASH MESSAGES -->
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             <ul class="flash">
@@ -29,6 +33,7 @@
         {% endif %}
     {% endwith %}
 
+    <!-- MAIN CONTENT -->
     <div class="container">
         {% block content %}{% endblock %}
     </div>
