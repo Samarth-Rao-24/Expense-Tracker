@@ -3,8 +3,7 @@ import pymysql
 import re
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-import csv 
-
+import csv
 
 app = Flask(__name__)
 app.secret_key = 'adeee'
@@ -74,7 +73,7 @@ def login():
             session['loggedin'] = True
             session['user_id'] = account['user_id']
             session['username'] = account['username']
-            return redirect(url_for('add_expense'))
+            return redirect(url_for('dashboard'))  # redirect to dashboard after login
         else:
             flash("Invalid username or password!")
 
@@ -283,6 +282,68 @@ def export_csv():
         headers={"Content-Disposition": "attachment;filename=expenses.csv"}
     )
 
+# ---------------- DASHBOARD ----------------
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    cursor = db.cursor()
 
+    # Total spending
+    cursor.execute(
+        "SELECT IFNULL(SUM(amount),0) AS total FROM expenses WHERE user_id=%s",
+        (session['user_id'],)
+    )
+    total = cursor.fetchone()['total']
+
+    # This month spending
+    cursor.execute(
+        """
+        SELECT IFNULL(SUM(amount),0) AS total
+        FROM expenses
+        WHERE user_id=%s
+        AND MONTH(expense_date)=MONTH(CURDATE())
+        AND YEAR(expense_date)=YEAR(CURDATE())
+        """,
+        (session['user_id'],)
+    )
+    monthly_total = cursor.fetchone()['total']
+
+    # Category data
+    cursor.execute(
+        """
+        SELECT category, SUM(amount) AS total
+        FROM expenses
+        WHERE user_id=%s
+        GROUP BY category
+        """,
+        (session['user_id'],)
+    )
+    categories = cursor.fetchall()
+
+    # Last 7 days trend
+    cursor.execute(
+        """
+        SELECT expense_date, SUM(amount) AS total
+        FROM expenses
+        WHERE user_id=%s
+        GROUP BY expense_date
+        ORDER BY expense_date DESC
+        LIMIT 7
+        """,
+        (session['user_id'],)
+    )
+    trend = cursor.fetchall()
+
+    cursor.close()
+
+    return render_template(
+        'dashboard.html',
+        total=total,
+        monthly_total=monthly_total,
+        categories=categories,
+        trend=trend
+    )
+
+# ---------------- MAIN ----------------
 if __name__ == '__main__':
     app.run(debug=True)

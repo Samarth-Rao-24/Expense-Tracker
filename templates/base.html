@@ -12,6 +12,7 @@
         <a href="{{ url_for('home') }}">Home</a>
 
         {% if session.get('loggedin') %}
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
             <a href="{{ url_for('expenses') }}">Expenses</a>
             <a href="{{ url_for('monthly_report') }}">Monthly Report</a>
             <a href="{{ url_for('add_expense') }}">Add Expense</a>

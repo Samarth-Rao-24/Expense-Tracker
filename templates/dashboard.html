@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h2>Dashboard</h2>
+
+<!-- TOP GRID: SUMMARY CARDS -->
+<div class="grid">
+    <div class="card">
+        <h3>Total Spending</h3>
+        <p class="total">₹{{ total }}</p>
+    </div>
+
+    <div class="card">
+        <h3>This Month</h3>
+        <p class="total">₹{{ monthly_total }}</p>
+    </div>
+</div>
+
+<!-- CATEGORY PIE CHART -->
+<div class="card full-width">
+    <h3>Category-wise Spending</h3>
+    <canvas id="categoryChart"></canvas>
+</div>
+
+<!-- TREND LINE CHART -->
+<div class="card full-width">
+    <h3>Last 7 Days Trend</h3>
+    <canvas id="trendChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Category chart data
+    const categoryLabels = [
+        {% for c in categories %}
+            "{{ c['category'] }}",
+        {% endfor %}
+    ];
+    const categoryValues = [
+        {% for c in categories %}
+            {{ c['total'] }},
+        {% endfor %}
+    ];
+
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'pie',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                data: categoryValues,
+                backgroundColor: ['#2c3e50','#3498db','#e74c3c','#27ae60','#f39c12']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // Trend chart data
+    const trendLabels = [
+        {% for t in trend %}
+            "{{ t['expense_date'] }}",
+        {% endfor %}
+    ];
+    const trendValues = [
+        {% for t in trend %}
+            {{ t['total'] }},
+        {% endfor %}
+    ];
+
+    new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+            labels: trendLabels.reverse(), // oldest first
+            datasets: [{
+                label: 'Daily Spending (₹)',
+                data: trendValues.reverse(),
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52,152,219,0.2)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+{% endblock %}
