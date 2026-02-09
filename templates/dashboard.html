@@ -20,7 +20,11 @@
 <!-- CATEGORY PIE CHART -->
 <div class="card full-width">
     <h3>Category-wise Spending</h3>
-    <canvas id="categoryChart"></canvas>
+
+    <!-- PIE SIZE CONTROL -->
+    <div style="max-width:360px;height:360px;margin:0 auto;">
+        <canvas id="categoryChart"></canvas>
+    </div>
 </div>
 
 <!-- TREND LINE CHART -->
@@ -49,13 +53,29 @@
             labels: categoryLabels,
             datasets: [{
                 data: categoryValues,
-                backgroundColor: ['#2c3e50','#3498db','#e74c3c','#27ae60','#f39c12']
+                backgroundColor: [
+                    '#2f3e46',  // slate
+                    '#52796f',  // muted green
+                    '#84a98c',  // soft green
+                    '#cad2c5',  // light neutral
+                    '#6c757d'   // soft gray
+                ],
+                borderWidth: 0
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' }
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        font: {
+                            size: 13
+                        }
+                    }
+                }
             }
         }
     });

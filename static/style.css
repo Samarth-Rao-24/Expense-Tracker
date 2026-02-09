@@ -1,126 +1,153 @@
+/* BASE RESET */
+* {
+    box-sizing: border-box;
+}
+
+/* BODY */
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
     background-color: #f4f6f8;
     margin: 0;
     padding: 0;
+    color: #2c3e50;
+    font-size: 15px;
+    line-height: 1.6;
 }
 
 /* NAVBAR */
 nav {
     background: #2c3e50;
-    padding: 15px 30px;
+    padding: 16px 40px;
 }
 
 nav a {
-    color: white;
-    margin-right: 20px;
+    color: #ffffff;
+    margin-right: 24px;
     text-decoration: none;
-    font-weight: bold;
+    font-weight: 600;
+    font-size: 14px;
 }
 
 nav a:hover {
     text-decoration: underline;
 }
 
-/* CONTAINER (WIDER FOR EXPENSE PAGE) */
+/* MAIN CONTAINER */
 .container {
-    background: white;
-    padding: 30px;
+    background: #ffffff;
+    padding: 32px 40px;
     margin: 40px auto;
-    width: 80%;              /* 🔥 widened from 50% */
+    width: 90%;
     max-width: 1200px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
 }
 
 /* HEADINGS */
-h2, h3, h4 {
-    color: #2c3e50;
+h2 {
+    font-size: 26px;
+    margin-bottom: 20px;
+    font-weight: 700;
 }
 
-/* GRID LAYOUT (FILTER + SUMMARY) */
+h3 {
+    font-size: 20px;
+    margin-bottom: 14px;
+    font-weight: 600;
+}
+
+h4 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+/* GRID LAYOUT */
 .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 25px;
-    margin-bottom: 30px;
+    gap: 30px;
+    align-items: stretch;
+    margin-bottom: 35px;
 }
 
-/* CARD STYLE */
+/* CARD */
 .card {
     background: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    padding: 24px;
+    border-radius: 10px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.08);
 }
 
-/* FULL WIDTH SECTIONS */
+/* FULL WIDTH */
 .full-width {
     width: 100%;
-    margin-top: 30px;
+    margin-top: 35px;
 }
 
-/* TOTAL AMOUNT */
+/* TOTAL */
 .total {
-    font-size: 26px;
-    font-weight: bold;
-    margin: 10px 0 20px;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 12px 0 24px;
     color: #2c3e50;
 }
 
-/* FORM LABELS */
+/* LABELS */
 label {
     display: block;
-    font-size: 14px;
-    font-weight: bold;
-    margin-top: 12px;
-    color: #2c3e50;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 14px;
+    color: #34495e;
 }
 
-/* FORMS */
-input, select, button {
+/* INPUTS */
+input,
+select,
+button {
     width: 100%;
-    padding: 10px;
+    padding: 11px 12px;
     margin-top: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
     font-size: 14px;
-    box-sizing: border-box;
 }
 
-select {
-    background-color: #fff;
-    cursor: pointer;
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #2c3e50;
 }
 
 /* BUTTONS */
 button {
     background: #2c3e50;
-    color: white;
+    color: #ffffff;
     border: none;
     cursor: pointer;
-    font-weight: bold;
-    transition: background 0.3s ease;
-    margin-top: 15px;
+    font-weight: 600;
+    transition: background 0.25s ease;
+    margin-top: 18px;
 }
 
 button:hover {
     background: #34495e;
 }
 
-/* FLASH MESSAGES */
+/* FLASH */
 .flash {
     list-style: none;
-    margin: 20px auto;
-    width: 80%;
-    padding: 10px;
+    margin: 25px auto;
+    width: 90%;
+    padding: 0;
 }
 
 .flash li {
     background: #dff0d8;
     color: #3c763d;
-    padding: 10px;
-    border-radius: 5px;
+    padding: 12px 16px;
+    border-radius: 6px;
     font-size: 14px;
 }
 
@@ -128,45 +155,52 @@ button:hover {
 table {
     border-collapse: collapse;
     width: 100%;
-    margin-top: 15px;
+    margin-top: 20px;
+    font-size: 14px;
 }
 
-table th, table td {
-    padding: 12px;
+table th,
+table td {
+    padding: 14px;
     text-align: left;
-    font-size: 14px;
 }
 
 table th {
     background: #2c3e50;
-    color: white;
+    color: #ffffff;
+    font-weight: 600;
 }
 
 table tr:nth-child(even) {
-    background: #f2f2f2;
+    background: #f5f7f9;
 }
 
 table tr:hover {
-    background: #eaeaea;
+    background: #eaeef2;
 }
 
-/* LIST (CATEGORY SUMMARY) */
+/* LIST */
 ul {
     padding-left: 20px;
-}
-
-ul li {
-    margin: 6px 0;
     font-size: 14px;
 }
 
-/* RESPONSIVE (MOBILE) */
+ul li {
+    margin: 8px 0;
+}
+
+/* RESPONSIVE */
 @media (max-width: 900px) {
     .container {
         width: 95%;
+        padding: 24px;
     }
 
     .grid {
         grid-template-columns: 1fr;
+    }
+
+    nav {
+        padding: 14px 24px;
     }
 }
