@@ -4,15 +4,16 @@ import re
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import csv
+import os 
 
 app = Flask(__name__)
-app.secret_key = 'adeee'
+app.secret_key = os.getenv("SECRET_KEY", "dev_key")
 
 # ---------------- DB CONNECTION ----------------
 db = pymysql.connect(
     host="localhost",
     user="root",
-    password="scs123",
+    password=os.getenv("DB_PASSWORD", "scs123"),
     database="expense_tracker",
     cursorclass=pymysql.cursors.DictCursor
 )
